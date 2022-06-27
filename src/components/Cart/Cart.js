@@ -1,27 +1,47 @@
 import classes from './Cart.module.css';
-import { useContext } from 'react';
-import { AppContext } from '../../store/appContext';
 import { Modal } from '../UI/Modal';
+import { useContext } from 'react';
+import { CartContext } from '../../store/cart-context';
+import { CartItem } from './CartItem';
 
 export const Cart = props => {
+const cartCtx = useContext(CartContext);
+// console.log(cartCtx.totalAmount)
+const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
+const cartItemAddHandler = item => {
+    cartCtx.addItem({
+        ...item,
+        amount: 1
+    })
+}
+const cartItemRemoveHandler = id => {
+    cartCtx.removeItem(id)
+}
 
-    const appCtx = useContext(AppContext);
-
-    const cartItems = <ul>{[{id: 'c1', name: 'Sushi', amount: 2, price: 12.99}].map(item => <li className={classes['cart-items']} key={item.id}>{item.name}</li>)}</ul>
-
-    if(!appCtx.isVisible) {
-        return null
+const hasItems = cartCtx.items.length > 0;
+    const cartItems = <ul className={classes['cart-items']}>
+        {cartCtx.items.map((item) => {
+            return <CartItem 
+                key={item.id} 
+                name={item.name} 
+                amount={item.amount}
+                price={item.price}
+                onAdd={cartItemAddHandler.bind(null, item)}
+                onRemove={cartItemRemoveHandler.bind(null, item.id)}
+                />
+        })
     }
+    </ul>
 
     return <Modal onClose={props.onClose}>
-            {cartItems}
+            {cartItems} 
             <div className={classes.total}>
-                <span>Total Amount</span>
-                <span>35.62</span>
+                <span>total Amount</span>
+                <span>{totalAmount}</span>
             </div>
             <div className={classes.actions}>
                 <button onClick={props.onClose} className={classes['button--alt']}>Close</button>
-                <button className={classes.button}>Order</button>
+                {hasItems && <button className={classes.button}>Order</button>}
             </div>
         </Modal>
 }
